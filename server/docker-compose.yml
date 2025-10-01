@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: taskly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: taskly_db
+      POSTGRES_USER: taskly_user
+      POSTGRES_PASSWORD: taskly_password
+    ports:
+      - "5437:5432" # Match the port in your .env file
+    volumes:
+      - taskly_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskly_user -d taskly_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  taskly_postgres_data:
+    driver: local
