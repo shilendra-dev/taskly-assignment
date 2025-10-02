@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/ui/atoms/button";
 import {
   Dialog,
@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/ui/atoms/dialog";
 import { Input } from "@/ui/atoms/input";
 import {
@@ -19,27 +18,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/atoms/select";
-import { Plus } from "lucide-react";
 import { useTaskApi } from "@/hooks/useTaskApi";
 import { toast } from "react-hot-toast";
 import { task } from "./type";
 import { useTaskStore } from "@/store/taskStore";
 
-interface CreateTaskProps {
-  onTaskCreated?: (setTasks: (tasks: task[]) => void) => void;
+interface UpdateTaskProps {
+  task: task | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function CreateTask({ onTaskCreated }: CreateTaskProps) {
-  const [open, setOpen] = useState(false);
+export function UpdateTask({ task, open, onOpenChange }: UpdateTaskProps) {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const { createTask } = useTaskStore();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { updateTask } = useTaskStore();
 
   const taskApi = useTaskApi();
 
+  // Populate form when task changes
+  useEffect(() => {
+    if (task && task.title && task.status) {
+      setTitle(task.title);
+      setStatus(task.status);
+    }
+  }, [task]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!task) return;
 
     if (!title.trim()) {
       toast.error("Please enter a task title");
@@ -51,55 +60,45 @@ export function CreateTask({ onTaskCreated }: CreateTaskProps) {
       return;
     }
 
-    setIsCreating(true);
+    setIsUpdating(true);
 
     try {
-      // API call to create task
-      const newTask = await taskApi.create(title.trim(), status);
-      toast.success("Task created successfully!");
+      await taskApi.update(task.id, title.trim(), status);
+      toast.success("Task updated successfully!");
 
-      // Reset form
-      setTitle("");
-      setStatus("");
-      setOpen(false);
+      // Update store
+      updateTask(task.id, { title: title.trim(), status });
 
-      // Add the real task from API using the store method
-      createTask(newTask);
+      // Close dialog
+      onOpenChange(false);
     } catch (error) {
-      console.error("Failed to create task:", error);
-      toast.error("Failed to create task");
+      console.error("Failed to update task:", error);
+      toast.error("Failed to update task");
     } finally {
-      setIsCreating(false);
+      setIsUpdating(false);
     }
   };
 
   const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen);
-    if (!isOpen) {
-      // Reset form when dialog closes
-      setTitle("");
-      setStatus("");
+    onOpenChange(isOpen);
+    if (!isOpen && task) {
+      // Reset form to original values when dialog closes
+      setTitle(task.title);
+      setStatus(task.status);
     }
   };
 
+  if (!task || !task.title || !task.status) return null;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          className="text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10"
-        >
-          <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-          <span className="hidden sm:inline">Add Task</span>
-          <span className="sm:hidden">Add</span>
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] mx-4 max-w-[calc(100vw-2rem)]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
+            <DialogTitle>Update Task</DialogTitle>
             <DialogDescription>
-              Add a new task to your list. Fill in the details below.
+              Update the task details below.
+              {task && ` Currently editing: "${task.title}"`}
             </DialogDescription>
           </DialogHeader>
 
@@ -113,7 +112,7 @@ export function CreateTask({ onTaskCreated }: CreateTaskProps) {
                 placeholder="Enter task title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                disabled={isCreating}
+                disabled={isUpdating}
                 required
               />
             </div>
@@ -125,7 +124,7 @@ export function CreateTask({ onTaskCreated }: CreateTaskProps) {
               <Select
                 value={status}
                 onValueChange={setStatus}
-                disabled={isCreating}
+                disabled={isUpdating}
                 required
               >
                 <SelectTrigger>
@@ -144,13 +143,13 @@ export function CreateTask({ onTaskCreated }: CreateTaskProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isCreating}
+              onClick={() => onOpenChange(false)}
+              disabled={isUpdating}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? "Creating..." : "Create Task"}
+            <Button type="submit" disabled={isUpdating}>
+              {isUpdating ? "Updating..." : "Update Task"}
             </Button>
           </DialogFooter>
         </form>

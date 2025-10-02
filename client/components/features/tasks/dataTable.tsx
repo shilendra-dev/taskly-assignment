@@ -23,12 +23,14 @@ import {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
     onDelete?: (id: string) => void
+    onRowClick?: (row: TData) => void
   }
   
   export function DataTable<TData extends Record<string, any>, TValue>({
     columns,
     data,
     onDelete,
+    onRowClick,
   }: DataTableProps<TData, TValue>) {
     const [globalFilter, setGlobalFilter] = useState("")
   
@@ -50,6 +52,7 @@ import {
       },
       meta: {
         onDelete,
+        onRowClick,
       },
     })
   
@@ -92,15 +95,25 @@ import {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                table.getRowModel().rows.map((row) => {
+                  const task = row.original;
+                  // Skip rows with invalid task data
+                  if (!task || !task.title) return null;
+
+                  return (
+                    <TableRow
+                      key={row.id}
+                      className={`cursor-pointer hover:bg-gray-50 transition-colors ${onRowClick ? 'hover:bg-gray-50' : ''}`}
+                      onClick={() => onRowClick?.(task)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-24 text-center text-xs sm:text-sm">

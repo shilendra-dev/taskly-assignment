@@ -6,7 +6,7 @@ interface TaskStore {
     setTasks: (tasks: task[]) => void;
     deleteTask: (id: string) => void;
     createTask: (task: task) => void;
-    updateTask: (task: task) => void;
+    updateTask: (id: string, updates: Partial<task>) => void;
 }
 
 export const useTaskStore = create<TaskStore>((set) => ({
@@ -18,7 +18,7 @@ export const useTaskStore = create<TaskStore>((set) => ({
     createTask: (task: task) => set((state) => ({
         tasks: [...state.tasks, task],
     })),
-    updateTask: (task: task) => set((state) => ({
-        tasks: state.tasks.map((t) => (t.id === task.id ? task : t)),
+    updateTask: (id: string, updates: Partial<task>) => set((state) => ({
+        tasks: state.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
     })),
 })) 
