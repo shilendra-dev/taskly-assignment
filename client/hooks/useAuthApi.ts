@@ -1,24 +1,17 @@
 'use client'
 
 import { api } from '../lib/api';
+import handleApiError from '@/utils/apiError';
 
 interface User {
     id: string;
     name: string;
     email: string;
-    created_at?: string;
-    updated_at?: string;
 }
 
 interface AuthResponse {
     token: string;
 }
-
-const handleApiError = (err: any, defaultMessage: string) => {
-    const error = new Error(err?.response?.data?.message || err?.message || defaultMessage);
-    (error as any).status = err?.response?.data?.status || err?.status;
-    throw error;
-};
 
 export const authApi = {
     login: async (email: string, password: string): Promise<AuthResponse> => {
@@ -46,9 +39,9 @@ export const authApi = {
         }
     },
 
-    getUserProfile: async (): Promise<User> => {
+    getUserProfile: async (): Promise<{user: User[]}> => {
         try {
-            const response = await api.get<User>('/user/profile');
+            const response = await api.get<{user: User[]}>('/me');
             return response.data;
         } catch (err: any) {
             throw handleApiError(err, 'Failed to fetch user profile');
