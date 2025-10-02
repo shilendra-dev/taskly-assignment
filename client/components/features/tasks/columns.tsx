@@ -21,6 +21,7 @@ import {
 import { MoreHorizontal, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTaskApi } from '@/hooks/useTaskApi'
+import { useTaskStore } from '@/store/taskStore'
 
 export const columns: ColumnDef<task>[] = [
     {
@@ -55,10 +56,10 @@ export const columns: ColumnDef<task>[] = [
         },
     },
     {
-        accessorKey: 'created_at',
+        accessorKey: 'createdAt',
         header: 'Created On',
         cell: ({ row }) => {
-            const createdAt = row.getValue('created_at') as string
+            const createdAt = row.getValue('createdAt') as string
             return createdAt ? new Date(createdAt).toLocaleDateString() : '-'
         },
     },
@@ -68,11 +69,13 @@ export const columns: ColumnDef<task>[] = [
         cell: ({ row, table }) => {
             const task = row.original
             const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+            const taskApi = useTaskApi()
+            const { deleteTask } = useTaskStore()
 
             const handleDelete = async () => {
                 try {
-                    const taskApi = useTaskApi()
                     await taskApi.delete(task.id)
+                    deleteTask(task.id)
                     setShowDeleteDialog(false)
                 } catch (error) {
                     console.error('Failed to delete task:', error)

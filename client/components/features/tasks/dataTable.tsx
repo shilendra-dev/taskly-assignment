@@ -71,7 +71,7 @@ import {
           </span>
         </div>
   
-        {/* Table - Mobile Responsive */}
+        {/* Table */}
         <div className="border rounded-lg overflow-x-auto">
           <Table>
             <TableHeader>

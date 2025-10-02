@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/ui/atoms/button'
+import { useState } from "react";
+import { Button } from "@/ui/atoms/button";
 import {
   Dialog,
   DialogContent,
@@ -10,79 +10,93 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/ui/atoms/dialog'
-import { Input } from '@/ui/atoms/input'
+} from "@/ui/atoms/dialog";
+import { Input } from "@/ui/atoms/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/ui/atoms/select'
-import { Plus } from 'lucide-react'
-import { useTaskApi } from '@/hooks/useTaskApi'
-import { toast } from 'react-hot-toast'
+} from "@/ui/atoms/select";
+import { Plus } from "lucide-react";
+import { useTaskApi } from "@/hooks/useTaskApi";
+import { toast } from "react-hot-toast";
+import { task } from "./type";
+import { useTaskStore } from "@/store/taskStore";
 
 interface CreateTaskProps {
-  onTaskCreated?: () => void
+  onTaskCreated?: (setTasks: (tasks: task[]) => void) => void;
 }
 
 export function CreateTask({ onTaskCreated }: CreateTaskProps) {
-  const [open, setOpen] = useState(false)
-  const [title, setTitle] = useState('')
-  const [status, setStatus] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const { tasks, setTasks } = useTaskStore();
 
-  const taskApi = useTaskApi()
+  const taskApi = useTaskApi();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!title.trim()) {
-      toast.error('Please enter a task title')
-      return
+      toast.error("Please enter a task title");
+      return;
     }
 
     if (!status) {
-      toast.error('Please select a status')
-      return
+      toast.error("Please select a status");
+      return;
     }
 
-    setIsCreating(true)
+    setIsCreating(true);
 
     try {
-      await taskApi.create(title.trim(), status)
-      toast.success('Task created successfully!')
+      await taskApi.create(title.trim(), status);
+      toast.success("Task created successfully!");
 
       // Reset form
-      setTitle('')
-      setStatus('')
-      setOpen(false)
+      setTitle("");
+      setStatus("");
+      setOpen(false);
 
       // Refresh task list
-      onTaskCreated?.()
-
+      console.log(tasks);
+      setTasks([
+        ...tasks,
+        {
+          id: Date.now().toString(),
+          title,
+          status,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
     } catch (error) {
-      console.error('Failed to create task:', error)
-      toast.error('Failed to create task')
+      console.error("Failed to create task:", error);
+      toast.error("Failed to create task");
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen)
+    setOpen(isOpen);
     if (!isOpen) {
       // Reset form when dialog closes
-      setTitle('')
-      setStatus('')
+      setTitle("");
+      setStatus("");
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" className="text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10">
+        <Button
+          size="sm"
+          className="text-xs sm:text-sm px-2 sm:px-4 h-8 sm:h-10"
+        >
           <Plus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
           <span className="hidden sm:inline">Add Task</span>
           <span className="sm:hidden">Add</span>
@@ -144,11 +158,11 @@ export function CreateTask({ onTaskCreated }: CreateTaskProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Task'}
+              {isCreating ? "Creating..." : "Create Task"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

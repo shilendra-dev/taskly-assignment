@@ -14,28 +14,31 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { useTaskApi } from "@/hooks/useTaskApi";
 import { CreateTask } from "../tasks/createTask";
+import { useTaskStore } from "@/store/taskStore";
 
 export const Dashboard = () => {
-  const [tasks, setTasks] = useState<task[]>([]);
-  const taskApi = useTaskApi()
-  const [showCreateTask, setShowCreateTask] = useState(false)
+  const taskApi = useTaskApi();
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const { tasks, setTasks } = useTaskStore();
 
   const handleDelete = (id: string) => {
+    console.log(id);
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
   useEffect(() => {
     const loadTasks = async () => {
       try {
-        const data = await taskApi.getAll()
-        setTasks(data.tasks)
+        const data = await taskApi.getAll();
+        setTasks(data.tasks);
       } catch (error) {
-        console.error('Failed to load tasks:', error)
+        console.error("Failed to load tasks:", error);
       }
-    }
+    };
 
-    loadTasks()
-  }, [])
+    loadTasks();
+  }, [taskApi]);
+
   return (
     <div className="flex flex-col min-h-screen w-full">
       {/* Header */}
@@ -43,7 +46,11 @@ export const Dashboard = () => {
         <h1 className="font-semibold tracking-wider text-sm sm:text-md">
           Taskly
         </h1>
-        <Button size="sm" variant="default" className="text-xs sm:text-sm px-2 sm:px-4">
+        <Button
+          size="sm"
+          variant="default"
+          className="text-xs sm:text-sm px-2 sm:px-4"
+        >
           Logout
         </Button>
       </header>
@@ -52,7 +59,9 @@ export const Dashboard = () => {
         {/* User Card */}
         <Card className="w-full mb-4 sm:mb-6">
           <CardHeader className="pb-3 sm:pb-6">
-            <CardTitle className="text-lg sm:text-xl">Shilendra Singh</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">
+              Shilendra Singh
+            </CardTitle>
             <CardDescription className="text-sm sm:text-base break-all">
               shelendrasingh704@gmail.com
             </CardDescription>
@@ -73,7 +82,11 @@ export const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <DataTable columns={columns} data={tasks} onDelete={handleDelete} />
+            <DataTable
+              columns={columns}
+              data={tasks}
+              onDelete={handleDelete}
+            />
           </CardContent>
         </Card>
       </main>
