@@ -7,8 +7,6 @@ interface User {
     id: string;
     name: string;
     email: string;
-    created_at?: string;
-    updated_at?: string;
 }
 
 interface AuthResponse {
@@ -41,9 +39,9 @@ export const authApi = {
         }
     },
 
-    getUserProfile: async (): Promise<User> => {
+    getUserProfile: async (): Promise<{user: User[]}> => {
         try {
-            const response = await api.get<User>('/user/profile');
+            const response = await api.get<{user: User[]}>('/me');
             return response.data;
         } catch (err: any) {
             throw handleApiError(err, 'Failed to fetch user profile');

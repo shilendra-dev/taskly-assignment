@@ -15,6 +15,9 @@ import { useEffect } from "react";
 import { useTaskApi } from "@/hooks/useTaskApi";
 import { CreateTask } from "../tasks/createTask";
 import { useTaskStore } from "@/store/taskStore";
+import { Header } from "./header";
+import { authApi } from "@/hooks/useAuthApi";
+import { useUserStore } from "@/store/userStore";
 
 export const Dashboard = () => {
   const taskApi = useTaskApi();
@@ -39,35 +42,27 @@ export const Dashboard = () => {
     loadTasks();
   }, [taskApi]);
 
+  const { user, setUser } = useUserStore();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const data = await authApi.getUserProfile();
+        setUser(data.user[0]);
+        console.log("user", data.user[0]);
+      } catch (error) {
+        console.error("Failed to load user:", error);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen w-full">
-      {/* Header */}
-      <header className="flex justify-between items-center border border-border p-2 m-2 shadow-lg rounded-lg sm:w-7xl sm:mx-auto sm:px-4 sm:py-2">
-        <h1 className="font-semibold tracking-wider text-sm sm:text-md">
-          Taskly
-        </h1>
-        <Button
-          size="sm"
-          variant="default"
-          className="text-xs sm:text-sm px-2 sm:px-4"
-        >
-          Logout
-        </Button>
-      </header>
+      <Header />
 
       <main className="flex-1 w-full px-3 sm:px-4 py-4 sm:py-6 max-w-7xl mx-auto">
-        {/* User Card */}
-        <Card className="w-full mb-4 sm:mb-6">
-          <CardHeader className="pb-3 sm:pb-6">
-            <CardTitle className="text-lg sm:text-xl">
-              Shilendra Singh
-            </CardTitle>
-            <CardDescription className="text-sm sm:text-base break-all">
-              shelendrasingh704@gmail.com
-            </CardDescription>
-          </CardHeader>
-        </Card>
-
         {/* Tasks Card */}
         <Card className="w-full">
           <CardHeader>
