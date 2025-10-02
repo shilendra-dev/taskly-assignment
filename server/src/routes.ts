@@ -1,0 +1,1 @@
+import './resources/auth/routes.js';

@@ -5,6 +5,8 @@ import { routes } from './lib/ApiRouter';
 export const createApp = () => {
   const app = express();
 
+  app.use(express.json());
+
   //setting up routes
   app.use("/api", routes);
 
