@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useAuthApi } from "@/hooks/useAuthApi";
 import Link from "next/link";
+import { useAuth } from "@/provider/AuthProvider";
 
 export function SignInForm() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const { login } = useAuth();
   const authApi = useAuthApi();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,10 +25,11 @@ export function SignInForm() {
     setError("");
 
     try {
-      const { token } = await authApi.login(email, password);
-      localStorage.setItem("auth_token", token);
+      const data = await authApi.login(email, password);
+
+      login(data.token as string);
       toast.success("Signed in successfully!");
-      router.push("/");
+      router.push("/dashboard");
     } catch (err: any) {
       const errorMessage = err.message || "Invalid email or password";
       setError(errorMessage);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/provider/AuthProvider";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,6 +19,7 @@ export default function RootLayout({
         className="antialiased"
       >
         <AuthProvider>
+          <Toaster />
           {children}
         </AuthProvider>
       </body>

@@ -11,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  login: (token: string) => void;
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -39,10 +39,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initAuth = () => {
       if (typeof window !== 'undefined') {
-        const storedToken = localStorage.getItem('token');
+        const storedToken = localStorage.getItem('auth_token');
 
-        if (storedToken) {
+        if (storedToken && storedToken !== 'undefined' && storedToken !== 'null') {
           setToken(storedToken);
+        } else {
+          // Clear invalid token from localStorage
+          localStorage.removeItem('auth_token');
         }
       }
       setIsLoading(false);
@@ -51,12 +54,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string) => {
     setToken(newToken);
-    setUser(newUser);
 
     if (typeof window !== 'undefined') {
-      localStorage.setItem('token', newToken);
+      localStorage.setItem('auth_token', newToken);
     }
   };
 
@@ -65,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
 
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+      localStorage.removeItem('auth_token');
     }
   };
 

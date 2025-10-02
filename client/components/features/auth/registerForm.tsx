@@ -1,12 +1,13 @@
 "use client";
 
-import { Link } from "lucide-react";
 import { Button } from "@/ui/atoms/button";
 import { Input } from "@/ui/atoms/input";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useAuthApi } from "@/hooks/useAuthApi";
+import Link from "next/link";
+import { useAuth } from "@/provider/AuthProvider";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const { login } = useAuth();
   const authApi = useAuthApi();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,10 +35,10 @@ export function RegisterForm() {
     }
 
     try {
-      const { token } = await authApi.register(name, email, password);
-      localStorage.setItem("auth_token", token);
+      const data = await authApi.register(name, email, password);
+      login(data.token as string);
       toast.success("Account created successfully!");
-      router.push("/");
+      router.push("/dashboard");
     } catch (err: any) {
       const errorMessage = err.message || "Failed to create account";
       setError(errorMessage);
@@ -49,8 +51,8 @@ export function RegisterForm() {
   return (
     <div className="w-80 max-w-sm mx-auto text-center space-y-8">
       <div className="flex flex-col gap-4 space-y-2">
-        <div className="flex items-center justify-center flex-col">
-          <h1 className="text-2xl font-medium">Create Account</h1>
+        <div className="flex gap-1 items-center justify-center flex-col">
+          <h1 className="text-2xl font-bold">Create Account</h1>
           <p className="text-xs text-muted-foreground tracking-wider">
             Sign up to get started
           </p>
@@ -126,10 +128,10 @@ export function RegisterForm() {
         <div>
           Already have an account?{" "}
           <Link
-            href="/signin"
+            href="/login"
             className="text-primary hover:underline font-medium transition-colors"
           >
-            Sign in
+            Log in
           </Link>
         </div>
       </div>
