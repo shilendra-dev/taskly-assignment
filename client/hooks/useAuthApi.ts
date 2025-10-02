@@ -1,6 +1,7 @@
 'use client'
 
 import { api } from '../lib/api';
+import handleApiError from '@/utils/apiError';
 
 interface User {
     id: string;
@@ -13,12 +14,6 @@ interface User {
 interface AuthResponse {
     token: string;
 }
-
-const handleApiError = (err: any, defaultMessage: string) => {
-    const error = new Error(err?.response?.data?.message || err?.message || defaultMessage);
-    (error as any).status = err?.response?.data?.status || err?.status;
-    throw error;
-};
 
 export const authApi = {
     login: async (email: string, password: string): Promise<AuthResponse> => {
